@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>Add a default marker to a web map</title>
+  <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
+  <link href="https://api.mapbox.com/mapbox-gl-js/v2.10.0/mapbox-gl.css" rel="stylesheet">
+  <script src="https://api.mapbox.com/mapbox-gl-js/v2.10.0/mapbox-gl.js"></script>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+    }
+
+    #map {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 100%;
+    }
+
+    .title {
+      max-width: 180px;
+    }
+
+    .icon {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      width: 40px;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="map"></div>
+
+  <script>
+    mapboxgl.accessToken = 'pk.eyJ1Ijoic3RlcGFua3V6bWluIiwiYSI6Ik1ieW5udm8ifQ.25EOEC2-N92NCWT0Ci9w-Q';
+
+    const map = new mapboxgl.Map({
+        container: 'map',
+        style: 'mapbox://styles/mapbox/dark-v10',
+        center: [24.9375, 60.170833],
+        zoom: 10
+    });
+
+    function getMarkerElement() {
+      const el = document.createElement('div');
+      el.className = 'marker';
+      el.style.backgroundImage = `url(./emoji-sauna_whisk.png)`;
+      el.style.width = `40px`;
+      el.style.height = `40px`;
+      el.style.backgroundSize = '100%';
+      return el;
+    }
+
+    async function main() {
+      const response = await fetch('./helsinki-saunas.json');
+      const {data} = await response.json();
+
+      data.forEach(({ name, description, location, info_url }) => {
+        const title = name['en'] || name['fi'];
+        const html = `
+          <h2 class="title"><a href=${info_url} target="_blank">${title}</a></h2>
+          <img class="icon" src="./sauna-whisk-saunavihta.gif"/>
+          <br/>
+          ${description.intro}`;
+
+        const popup = new mapboxgl.Popup({ closeButton: false })
+          .setHTML(html)
+
+        const el = getMarkerElement();
+        const marker = new mapboxgl.Marker(el)
+          .setLngLat(location)
+          .setPopup(popup)
+          .addTo(map);
+      });
+    }
+
+    main();
+  </script>
+
+</body>
+
+</html>
